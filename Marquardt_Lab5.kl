@@ -1,0 +1,160 @@
+/**
+ * Christian Marquardt
+ * 3/28/2019
+ * CSCI305 Lab 5
+ * Overview: A program that consists of cities and manipulating them with build in functions such as
+ * map, filter, and maxBy. MutableMaps are also being used. This is an 8 step program to meet the
+ * specific requirements
+ */
+
+//Creating a data class that has all the attributes that a city has (Step 1)
+data class City(val name: String, val latitude: Double, val longitude: Double) 
+
+//This is the main functino where all of our steps are being ran from
+fun main() {
+   
+   //Initializing a list
+   val cityLocationsList: List<City>
+        
+   //Store this list with all the cities we are working with
+   cityLocationsList = listCities(); 
+   println()
+   
+   //In step two we are just simply printing out all the cities from the list
+   println("**********Step Two*********")
+   for (i in cityLocationsList.indices){
+       println(cityLocationsList[i]);
+   }
+   println()
+   
+   //In step three we are called the distanceFromSeattle function and printing
+   //the distance between Seattle to Tacoma
+   println("**********Step Three**********")
+   for (i in cityLocationsList.indices){
+       val distanceCities = distanceFromSeattle(cityLocationsList[i])
+       if(cityLocationsList[i].name == "Tacoma"){
+	   print("The distance between Seattle and " +cityLocationsList[i].name + " is " + distanceCities + " km" + "\n");
+       }
+   }
+   println()
+   
+   //In step four we create a list of cities and their distances between Seattle
+   //We do this by mapping, storing, and printing them
+   println("**********Step Four*********")
+   var myList: MutableList<Double> = mutableListOf<Double>()
+   for (i in cityLocationsList.indices){
+       val distance = cityLocationsList.map {_ -> distanceFromSeattle(cityLocationsList[i])}
+       myList.add(distance[i])
+       if(i == 4){
+           println("A new List with the distances of all cities in list to Seattle:")
+           print(myList)
+       }
+   }
+   println()
+   println()
+   
+   //In this function we are looking for cities that are over 1000km from Seattle
+   //Using the filtered method
+   println("**********Step Five*********")
+   println("List of cities over 1000KM from Seattle (used the return list from the Filter function and just printed the city name) ")
+   for (i in cityLocationsList.indices){
+       val d = cityLocationsList.map {_ -> distanceFromSeattle(cityLocationsList[i])}
+       val filtered = d.filter{ it > 1000.00}
+       for(j in filtered.indices){
+           val notNullFiltered = filtered.filter{ it != null}
+           if(distanceFromSeattle(cityLocationsList[j]) == notNullFiltered[j]){
+               println(cityLocationsList[j].name)
+           }       
+       }  
+   }
+   println()
+   
+   //In step six we are using map and filter methods to get the list of names that are in the West
+   //Or in other words any city that is less than -89.97 E (Mississippi)
+   println("**********Step Six*********")
+   var c: List<City>
+   var v: List<Double>
+   var noNull: List<Double>
+   var cityList: MutableList<String> = mutableListOf<String>()
+   var finalAttr: List<City>
+        
+   for (i in cityLocationsList.indices){
+       val v = cityLocationsList.map {_ -> cityLocationsList[i].longitude}
+       val c = v.filter{ it < -89.97803}
+       
+       for(i in c.indices){
+           val noNull = c.filter{ it != null}
+           
+           if(cityLocationsList[i].longitude == noNull[i]){
+               finalAttr = cityLocationsList
+               cityList.add(finalAttr[i].name)
+           }       
+       }
+   }
+   
+   //Print the final List for the cities in the West
+   print(cityList)
+   println()
+   println()
+   
+   
+   //In this step we are trying to go through the cities distances between Seattle
+   //And finding the furthest one away from Seattle by using the maxBy method
+   println("**********Step Seven*********")
+   for (i in cityLocationsList.indices){
+       val distr = cityLocationsList.maxBy {distanceFromSeattle(it)}
+       
+       if(i == 4){
+           println("Max Distance: " + distr)
+       }
+   }
+   
+   //In this step we are putting the cityLocationsList.name as the string key and putting 
+   //And putting all the attributes and info into a map
+   //Then go through each spot and print what is necessary
+   //Then at the end doing the same thing, we go through the keys to find bozeman and print the latitude
+   println("\n" + "**********Step Eight*********")
+   val mappedCities = mutableMapOf<String, City>()
+   
+   for(i in cityLocationsList.indices){
+       mappedCities.put(cityLocationsList[i].name, cityLocationsList[i])
+   }
+   
+   mappedCities.forEach { (key, value) -> 
+           println("Name $key: City $value")}
+   
+   mappedCities.forEach { (key, value) -> 
+           if(key == "Bozeman"){
+       println("The latitude for $key is " + value.latitude)} }
+}
+
+//These are all the cities we are working with, putting them into a list and returning that list to main
+fun listCities(): List<City>{
+    val city1 = City("Atlanta", 33.7490, -84.3880)
+    val city2 = City("Bozeman", 45.6770,  -111.0429)
+    val city3 = City("New York", 40.7128, -74.0060)
+    val city4 = City("San Francisco", 37.7749, -122.4194)
+    val city5 = City("Tacoma", 47.2529, -122.4443)
+    val cities = listOf(city1,city2,city3,city4,city5)
+    return cities
+}
+
+//In this function we are passing the distances of cities and comparing it to Seattle to get the distance diff
+fun distanceFromSeattle(city: City): Double{
+    val cityLatitude = city.latitude
+    val cityLongitude = city.longitude
+    return haversine(47.6062, -122.3321, cityLatitude, cityLongitude)
+}
+
+//The following is the haversine function you should incorporate to find the distances.
+////Calculates the distance in km between two points on a globe//Implementation from http:
+////rosettacode.org/wiki/Haversine_formula
+fun haversine(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {    
+    val R = 6372.8 // in kilometers
+    val l1 = Math.toRadians(lat1)    
+    val l2 = Math.toRadians(lat2)    
+    val dl = Math.toRadians(lat2 - lat1)    
+    val dr = Math.toRadians(lon2 - lon1)
+    return 2 * R * Math.asin(Math.sqrt(Math.pow(Math.sin(dl / 2), 2.0) +Math.pow(Math.sin(dr / 2), 2.0) * Math.cos(l1) * Math.cos(l2)))
+}
+
